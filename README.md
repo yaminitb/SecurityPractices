@@ -1,4 +1,4 @@
-5.1 Tokens stored in the Keychain, never in `UserDefaults`
+1.1 Tokens stored in the Keychain, never in `UserDefaults`
 
 final class KeychainHelper {
     static let shared = KeychainHelper()
@@ -40,7 +40,7 @@ final class KeychainHelper {
 Why it matters: access/refresh tokens are sensitive, long-lived credentials. UserDefaults is a plist on disk with no encryption; the Keychain is hardware-backed on-device encrypted storage — the correct place for auth tokens, not "convenient" local storage.
 
 
-5.2 Client-side JWT expiry parsing to pre-empt using a dead token
+1.2 Client-side JWT expiry parsing to pre-empt using a dead token
 
 
 struct JWTHelper {
@@ -64,7 +64,7 @@ struct JWTHelper {
 Why it matters: the app only decodes the JWT payload locally to read exp — it never trusts the client-side decode as proof of a valid signature (that's the server's job). Decoding expiry client-side just avoids sending obviously-dead tokens and drives the proactive-refresh logic in §3.3.
 
 
-5.3 Automatic session termination on `401` — no endpoint has to remember to handle it
+1.3 Automatic session termination on `401` — no endpoint has to remember to handle it
 
 
 switch httpResponse.statusCode {
@@ -79,7 +79,7 @@ default:
 
 Why it matters: this lives once, in NetworkService, the single chokepoint every API call passes through — so a revoked/expired token can never silently leave the app in a logged-in-looking-but-broken state, regardless of which of the 300+ screens triggered the call.
 
-5.4 Inactivity timeout — forced logout after idle time, independent of token expiry
+1.4 Inactivity timeout — forced logout after idle time, independent of token expiry
 
 private let inactivityThreshold: TimeInterval = 20 * 60   // 20 minutes idle
 private let warningThreshold: TimeInterval = (19 * 60) + 40
@@ -96,7 +96,7 @@ private func checkInactivity() {
 
 Why it matters: a stolen/unlocked device with a still-valid access token is a real risk — the idle-timeout logout (with a visible warning + countdown before it happens) is a defense-in-depth control that's independent of whether the underlying JWT has technically expired yet.
 
-5.5 Input validation before it reaches the network layer
+1.5 Input validation before it reaches the network layer
 enum Validator {
     static func isValidEmail(_ email: String) -> Bool {
         let emailRegEx = "[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,64}"
